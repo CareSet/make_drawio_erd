@@ -18,14 +18,31 @@ class MetaDataCSVParser(BaseParser):
         # Check for missing columns and add them with default values
         for col in expected_columns:
             if col not in df.columns:
-                if col in ['Is_Primary_Key', 'Is_Foreign_Key', 'Column_Order']:
+                if col in ['Is_Primary_Key', 'Is_Foreign_Key']:
                     df[col] = 0  # Default to 0 for numeric columns
+                elif col == 'Column_Order':
+                    df[col] = pd.NA  # Use NA for missing Column_Order
                 else:
                     df[col] = ''  # Default empty string for other columns
 
-        # Convert 'Is_Primary_Key', 'Is_Foreign_Key', and 'Column_Order' to integers
-        numeric_columns = ['Is_Primary_Key', 'Is_Foreign_Key', 'Column_Order']
+        # Convert 'Is_Primary_Key' and 'Is_Foreign_Key' to integers
+        numeric_columns = ['Is_Primary_Key', 'Is_Foreign_Key']
         for col in numeric_columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+
+        # Convert 'Column_Order' to numeric, but do not fill missing values yet
+        df['Column_Order'] = pd.to_numeric(df['Column_Order'], errors='coerce')
+
+        # Generate sequential numbers within each group (table)
+        df['Row_Number'] = df.groupby(['Catalog', 'Database', 'Table']).cumcount() + 1
+
+        # Fill missing 'Column_Order' with 'Row_Number'
+        df['Column_Order'] = df['Column_Order'].fillna(df['Row_Number'])
+
+        # Convert 'Column_Order' to integers
+        df['Column_Order'] = df['Column_Order'].astype(int)
+
+        # Drop the temporary 'Row_Number' column
+        df.drop(columns=['Row_Number'], inplace=True)
 
         return df

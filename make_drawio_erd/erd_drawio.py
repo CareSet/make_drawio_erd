@@ -70,6 +70,10 @@ class ERDGenerator:
 
         self.root = root
 
+    # In make_drawio_erd/erd_drawio.py
+
+    # ... (rest of the class)
+
     def _create_tables(self):
         # Get unique combinations of Catalog, Database, and Table
         tables = self.df[['Catalog', 'Database', 'Table']].drop_duplicates()
@@ -89,7 +93,15 @@ class ERDGenerator:
             catalog = table_row['Catalog']
             database = table_row['Database']
             table_name = table_row['Table']
-            full_table_name = f"{catalog}.{database}.{table_name}"
+
+            # If Catalog and Database are empty, use only the Table name
+            if not catalog and not database:
+                full_table_name = table_name
+            else:
+                # Construct full_table_name based on available fields
+                name_parts = [part for part in [catalog, database, table_name] if part]
+                full_table_name = '.'.join(name_parts)
+
             table_id = str(self.cell_id)
             self.cell_id += 1
 
@@ -111,8 +123,8 @@ class ERDGenerator:
                 'id': table_id,
                 'value': f'<span style="text-wrap: nowrap;">{html.escape(full_table_name)}</span>',
                 'style': f'shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;'
-                         f'fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;'
-                         f'fontSize={self.title_font_size};',
+                        f'fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;html=1;whiteSpace=wrap;'
+                        f'fontSize={self.title_font_size};',
                 'vertex': '1',
                 'parent': '1'
             })
@@ -123,6 +135,7 @@ class ERDGenerator:
                 'height': str(table_height),
                 'as': 'geometry'
             })
+
 
             y_position = 30  # Start position for rows (after header)
 
