@@ -10,6 +10,11 @@ setup(
         'pandas',
         # Include other dependencies
     ],
+    entry_points={
+        'console_scripts': [
+            'make_drawio_erd=make_drawio_erd.cli:main',
+        ],
+    },    
     author='Fred Trotter',
     author_email='fred.trotter@careset.com',
     description='A package to generate draw.io XML files with simple ERD table diagrams from various data sources.',
