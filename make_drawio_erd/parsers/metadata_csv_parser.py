@@ -18,13 +18,14 @@ class MetaDataCSVParser(BaseParser):
         # Check for missing columns and add them with default values
         for col in expected_columns:
             if col not in df.columns:
-                if col in ['Is_Primary_Key', 'Is_Foreign_Key']:
-                    df[col] = 0  # Default to 0 (False)
+                if col in ['Is_Primary_Key', 'Is_Foreign_Key', 'Column_Order']:
+                    df[col] = 0  # Default to 0 for numeric columns
                 else:
                     df[col] = ''  # Default empty string for other columns
 
-        # Convert 'Is_Primary_Key' and 'Is_Foreign_Key' to integers (0 or 1)
-        df['Is_Primary_Key'] = df['Is_Primary_Key'].fillna(0).astype(int)
-        df['Is_Foreign_Key'] = df['Is_Foreign_Key'].fillna(0).astype(int)
+        # Convert 'Is_Primary_Key', 'Is_Foreign_Key', and 'Column_Order' to integers
+        numeric_columns = ['Is_Primary_Key', 'Is_Foreign_Key', 'Column_Order']
+        for col in numeric_columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
         return df
